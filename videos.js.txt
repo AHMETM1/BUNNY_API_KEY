@@ -1,18 +1,27 @@
-// api/videos.js
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
   const folder = req.query.folder || '';
-  const zoneName = 'maximall'; // Bunny Storage Zone adı
+  const zoneName = 'maximall';
   const apiKey = process.env.BUNNY_API_KEY;
 
-  const url = `https://storage.bunnycdn.com/${zoneName}/${folder}`;
+  if (!folder) {
+    return res.status(400).json({ error: 'folder parametresi gerekli' });
+  }
+  if (!apiKey) {
+    return res.status(500).json({ error: 'BUNNY_API_KEY bulunamadı' });
+  }
+
+  const url = `https://storage.bunnycdn.com/${zoneName}/${folder}/`;
 
   try {
     const response = await fetch(url, {
       headers: { AccessKey: apiKey }
     });
 
-    if (!response.ok) throw new Error(`API hatası: ${response.statusText}`);
+    if (!response.ok) throw new Error(`API hatası: ${response.status} ${response.statusText}`);
 
     const files = await response.json();
 
@@ -20,7 +29,7 @@ export default async function handler(req, res) {
       .filter(f => f.ObjectName.endsWith('.mp4'))
       .map(f => `https://maximallcdn.b-cdn.net/${folder}/${f.ObjectName}`);
 
-    res.status(200).json(videoUrls.slice(0, 30)); // max 30 video
+    res.status(200).json(videoUrls.slice(0, 30));
   } catch (err) {
     res.status(500).json({ error: 'API hatası', details: err.message });
   }
