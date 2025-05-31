@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>ARABIC Vitrin Reklamı</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: sans-serif;
+    }
+    .video-box {
+      text-align: center;
+    }
+    button {
+      padding: 14px 28px;
+      font-size: 18px;
+      background-color: transparent;
+      color: white;
+      border: 1px solid white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="video-box">
+    <h2>ARABIC Vitrin Reklamı</h2>
+    <button onclick="loadAndPlay('ARABICVITRIN')">Tam Ekran Başlat</button>
+  </div>
+
+  <script>
+    async function loadAndPlay(folder) {
+      const response = await fetch(`/api/videos?folder=${folder}`);
+      const list = await response.json();
+      if (!Array.isArray(list) || list.length === 0) {
+        alert("Video bulunamadı");
+        return;
+      }
+
+      let i = 0;
+      const video = document.createElement('video');
+      video.style = "position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:9999;";
+      video.autoplay = true;
+      video.muted = true;
+      video.playsInline = true;
+
+      const next = () => {
+        video.src = list[i];
+        video.play();
+        i = (i + 1) % list.length;
+      };
+
+      video.addEventListener("ended", next);
+      document.body.appendChild(video);
+      next();
+
+      if (video.requestFullscreen) {
+        video.requestFullscreen();
+      }
+    }
+  </script>
+</body>
+</html>
